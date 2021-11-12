@@ -16,7 +16,8 @@ function App() {
   const MODE_COLLECTING = 2
   const MODE_TRAINNING = 3
   const [mode, setMode] = useState(MODE_LOADING)
-  const [label, setRawLabel] = useState([0,0])
+  const [label, setRawLabel] = useState([0,0,0])
+  const [detected, setDetected] = useState('')
 
   const [labelInput, setLabelInput] = useState(JSON.stringify(label))
 
@@ -63,7 +64,10 @@ function App() {
             setDataCollector ([...dataCollector, { inputs: hands[0].landmarks, labels: label}])
           }
           if (mode === MODE_IDLE) {
-            poseDetector.current.estimatePoses(rawHandsToDataset([{ inputs: hands[0].landmarks }]))
+            const result = poseDetector.current.estimatePoses(rawHandsToDataset([{ inputs: hands[0].landmarks }]))
+            if (result && result.length && result[0].some(score => score >= 0.8)) {
+              setDetected(['paper', 'scissors', 'rock'][result[0].findIndex(score => score >= 0.8)])
+            }
           }
         } 
 
@@ -154,6 +158,7 @@ function App() {
           <legend>Trainning</legend>
           { mode === MODE_COLLECTING && (<span>collecting... {dataCollector.length ? (<React.Fragment>{dataCollector.length} frame(s)</React.Fragment>) : null} </span>)}
           { mode === MODE_TRAINNING && (<span>trainning...</span>)}
+          { mode === MODE_IDLE && detected && (<span>{detected}</span>)}
           <fieldset>
             <legend>current label : {JSON.stringify(label)}</legend>
             <label htmlFor="new_label">update to</label><input id="new_label" value={labelInput} onChange={e => setLabelInput(e.target.value)} />

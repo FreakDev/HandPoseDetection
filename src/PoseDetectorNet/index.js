@@ -12,7 +12,7 @@ function createModel() {
   model.add(tf.layers.dense({units: 50, activation: 'relu'}));
 
   // Add an output layer
-  model.add(tf.layers.dense({units: 2, activation: 'softmax'}));
+  model.add(tf.layers.dense({units: 3, activation: 'softmax'}));
 
   return model;
 }
@@ -26,7 +26,7 @@ function convertToTensor(data, normalizationData) {
     const labels = data.labels
 
     const inputTensor = tf.tensor2d(inputs, [inputs.length, 63]);
-    const labelTensor = tf.tensor2d(labels, [labels.length, 2]);
+    const labelTensor = tf.tensor2d(labels, [labels.length, 3]);
 
     //Step 3. Normalize the data to the range 0 - 1 using min-max scaling
     
@@ -98,7 +98,7 @@ export default {
         if (normalizationData) {
           const {labelMin, labelMax} = normalizationData;
 
-          tf.tidy(() => {
+          return tf.tidy(() => {
         
             // let xs = tf.linspace(0, 1, 100);
             const [{inputs}] = convertToTensor(dataset, normalizationData)
@@ -109,6 +109,8 @@ export default {
               .add(labelMin);
   
             unNormPreds.print()
+
+            return unNormPreds.arraySync()
           })  
         }
       }
